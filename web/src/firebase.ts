@@ -12,6 +12,9 @@ export interface FirebaseConfig {
   databaseURL: string;
   projectId: string;
   appId: string;
+  storageBucket?: string;
+  messagingSenderId?: string;
+  measurementId?: string;
 }
 
 const STORAGE_KEY = 'holdem.firebaseConfig';

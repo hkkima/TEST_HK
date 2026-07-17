@@ -3,6 +3,7 @@ import { Setup } from './components/Setup';
 import { Home } from './components/Home';
 import { Table } from './components/Table';
 import { getStoredConfig, initFirebase, FirebaseConfig } from './firebase';
+import { DEFAULT_FIREBASE_CONFIG } from './firebaseDefaults';
 
 type View = 'loading' | 'setup' | 'home' | 'table';
 
@@ -11,8 +12,8 @@ export default function App() {
   const [room, setRoom] = useState<{ id: string; seat: number } | null>(null);
 
   useEffect(() => {
-    const cfg = getStoredConfig();
-    if (!cfg) { setView('setup'); return; }
+    // Prefer a user-supplied config; otherwise fall back to the built-in project.
+    const cfg = getStoredConfig() || DEFAULT_FIREBASE_CONFIG;
     initFirebase(cfg)
       .then(() => {
         // Restore an in-progress room after refresh.
