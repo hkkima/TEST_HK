@@ -47,51 +47,67 @@ export function Home({ onEnter }: { onEnter: (roomId: string, seat: number) => v
   return (
     <div className="screen">
       <div className="panel">
-        <h1>🃏 Texas Hold'em</h1>
-        <div className="tabs">
-          <button className={tab === 'create' ? 'tab active' : 'tab'} onClick={() => setTab('create')}>방 만들기</button>
-          <button className={tab === 'join' ? 'tab active' : 'tab'} onClick={() => setTab('join')}>참가하기</button>
+        <div>
+          <h1 className="brand">Nocturne</h1>
+          <div className="brand-sub">Texas Hold'em · 4 players</div>
         </div>
 
-        <label>내 이름
-          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={12} placeholder="닉네임" />
-        </label>
+        <div className="seg">
+          <label className="seg-opt">
+            <input type="radio" name="tab" checked={tab === 'create'} onChange={() => setTab('create')} />
+            방 만들기
+          </label>
+          <label className="seg-opt">
+            <input type="radio" name="tab" checked={tab === 'join'} onChange={() => setTab('join')} />
+            참가하기
+          </label>
+        </div>
+
+        <div className="field">
+          <label>내 이름</label>
+          <input className="input" value={name} onChange={(e) => setName(e.target.value)} maxLength={12} placeholder="닉네임" />
+        </div>
 
         {tab === 'create' ? (
           <>
             <div className="grid2">
-              <label>초기 칩
-                <input type="number" value={cfg.initialChips}
+              <div className="field">
+                <label>초기 칩</label>
+                <input className="input" type="number" value={cfg.initialChips}
                   onChange={(e) => setCfg({ ...cfg, initialChips: num(e.target.value, 100) })} />
-              </label>
-              <label>초기 BB
-                <input type="number" value={cfg.initialBB}
+              </div>
+              <div className="field">
+                <label>초기 BB</label>
+                <input className="input" type="number" value={cfg.initialBB}
                   onChange={(e) => setCfg({ ...cfg, initialBB: num(e.target.value, 2) })} />
-              </label>
-              <label>BB 상승 주기 (핸드)
-                <input type="number" value={cfg.handsPerLevel}
+              </div>
+              <div className="field">
+                <label>BB 상승 주기 (핸드)</label>
+                <input className="input" type="number" value={cfg.handsPerLevel}
                   onChange={(e) => setCfg({ ...cfg, handsPerLevel: num(e.target.value, 1) })} />
-              </label>
-              <label>BB 상승 배수
-                <input type="number" step="0.1" value={cfg.blindMultiplier}
+              </div>
+              <div className="field">
+                <label>BB 상승 배수</label>
+                <input className="input" type="number" step="0.1" value={cfg.blindMultiplier}
                   onChange={(e) => setCfg({ ...cfg, blindMultiplier: Math.max(1.1, Number(e.target.value) || 2) })} />
-              </label>
+              </div>
             </div>
             <p className="muted small">SB는 BB의 절반, 최대 4인. {cfg.handsPerLevel}핸드마다 BB가 ×{cfg.blindMultiplier} 상승합니다.</p>
-            <button className="btn primary" disabled={busy} onClick={handleCreate}>방 만들기</button>
+            <button className="btn btn-primary btn-block" disabled={busy} onClick={handleCreate}>방 만들기</button>
           </>
         ) : (
           <>
-            <label>방 코드
-              <input value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+            <div className="field">
+              <label>방 코드</label>
+              <input className="input" value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                 maxLength={5} placeholder="예: ABCDE" style={{ textTransform: 'uppercase' }} />
-            </label>
-            <button className="btn primary" disabled={busy} onClick={handleJoin}>참가</button>
+            </div>
+            <button className="btn btn-primary btn-block" disabled={busy} onClick={handleJoin}>참가</button>
           </>
         )}
 
         {error && <div className="error">{error}</div>}
-        <button className="btn link" onClick={() => { clearConfig(); location.reload(); }}>Firebase 설정 변경</button>
+        <button className="btn btn-ghost" onClick={() => { clearConfig(); location.reload(); }}>Firebase 설정 변경</button>
       </div>
     </div>
   );

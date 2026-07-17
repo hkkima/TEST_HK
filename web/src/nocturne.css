@@ -1,0 +1,472 @@
+/* Nocturne — a decadent gold-and-wine salon for Texas Hold'em. Warm wine-black
+   grounds, champagne gold as the room's light, a burgundy velvet felt, and an
+   engraved serif for money. This file is the source of truth for the look;
+   retune it here and see readme.md. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&display=swap');
+
+:root {
+  --color-bg: #1b0b10;      /* deep wine-black, warm */
+  --color-surface: #2a141b; /* a table lifted out of the dark */
+  --color-text: #f2e8dc;    /* warm champagne white */
+  --color-accent: #cba14e;  /* champagne gold — the room's light, an edge and a glow */
+  --color-accent-2: #a83545;/* wine red — the felt's own family, a second voice */
+  --color-divider: color-mix(in srgb, #f2e8dc 14%, transparent);
+
+  /* Tonal ramps — one shared perceptual lightness scale, warm-tinted to sit
+     on the wine ground; the same step of any role matches the others in value. */
+  --color-neutral-100: #f6efe6;
+  --color-neutral-200: #e7dccd;
+  --color-neutral-300: #d0c2af;
+  --color-neutral-400: #b09f8c;
+  --color-neutral-500: #8f7f6f;
+  --color-neutral-600: #6f6153;
+  --color-neutral-700: #52473d;
+  --color-neutral-800: #392f29;
+  --color-neutral-900: #241d19;
+
+  --color-accent-100: #fbf3df;
+  --color-accent-200: #f4e6b8;
+  --color-accent-300: #edd489;
+  --color-accent-400: #ddbd63;
+  --color-accent-500: #cba14e;
+  --color-accent-600: #a9823a;
+  --color-accent-700: #83632c;
+  --color-accent-800: #5c4520;
+  --color-accent-900: #3a2b15;
+
+  --color-accent-2-100: #fce4e6;
+  --color-accent-2-200: #f4b8c0;
+  --color-accent-2-300: #e2818f;
+  --color-accent-2-400: #c85263;
+  --color-accent-2-500: #a83545;
+  --color-accent-2-600: #8a2838;
+  --color-accent-2-700: #661d29;
+  --color-accent-2-800: #46151d;
+  --color-accent-2-900: #2b0e13;
+
+  /* Deck section-divider / stat-band ground — saturation as presence: a
+     saturated deep wine, a lighter bloom, a ghost tint. Slide/page-scale
+     fills only, not interface chrome. */
+  --color-section: #46151d;
+  --color-section-glow: #6a1f2c;
+  --color-section-ghost: #8a2838;
+
+  /* The felt — deep burgundy velvet with a warm bloom at the center and a
+     darkened rail at the edge. Table surfaces only. */
+  --color-felt: #3c1420;
+  --color-felt-glow: #5a1e30;
+  --color-felt-edge: #1e0810;
+
+  --font-heading: "Inter", system-ui, sans-serif;
+  --font-heading-weight: 500;
+  --font-body: "Inter", system-ui, sans-serif;
+  /* Cormorant Garamond — the salon's engraved brass: brand, headings of
+     presence, and every amount (stacks, pot, blinds) that should read as
+     money rather than data. */
+  --font-display: "Cormorant Garamond", Georgia, serif;
+
+  --space-1: 2.8px;
+  --space-2: 5.6px;
+  --space-3: 8.4px;
+  --space-4: 11.2px;
+  --space-6: 16.8px;
+  --space-8: 22.4px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+
+  /* Elevation — a hairline edge plus ambient darkness on the wine ground; the
+     top step warms to gold. */
+  --shadow-sm: 0 0 0 1px #392f29;
+  --shadow-md: 0 0 0 1px #52473d, 0 6px 20px rgba(0,0,0,0.6);
+  --shadow-lg: 0 0 0 1px color-mix(in srgb, #cba14e 40%, transparent), 0 18px 44px rgba(0,0,0,0.7);
+  /* The gold glow — the room's light caught on an edge; wins, focus of
+     attention, the accent bloom. */
+  --glow-gold: 0 0 0 1px color-mix(in srgb, #cba14e 60%, transparent), 0 0 22px color-mix(in srgb, #cba14e 45%, transparent), 0 0 56px color-mix(in srgb, #cba14e 22%, transparent); /* @kind shadow */
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+h1, h2, h3, h4 { font-family: var(--font-heading); font-weight: var(--font-heading-weight); }
+
+.lighten{mix-blend-mode:lighten;background-color:transparent}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Components — built with the tokens above. Plain CSS
+   on plain HTML: no JavaScript, no build step. Each class is documented in
+   readme.md and demonstrated in foundations/ and components/.
+   ══════════════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; font-size: 15px; line-height: 1.55; font-weight: 400; }
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  line-height: 1.12; letter-spacing: -0.015em; margin: 0 0 var(--space-2);
+}
+h1 { font-size: 42px; }
+h2 { font-size: 32px; }
+h3 { font-size: 25px; }
+h4 { font-size: 20px; }
+h5 { font-size: 16px; }
+h6 { font-size: 13px; }
+h6 { letter-spacing: 0.08em; text-transform: uppercase; }
+p { margin: 0 0 var(--space-3); }
+a { color: var(--color-accent); text-underline-offset: 3px; }
+img { display: block; max-width: 100%; }
+figure { margin: 0; }
+figcaption {
+  font-size: 11px; margin-top: var(--space-1);
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+.text-muted { color: color-mix(in srgb, var(--color-text) 55%, transparent); }
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+::selection { background: color-mix(in srgb, var(--color-accent) 30%, transparent); }
+
+/* — rules — */
+/* Rules fade to transparent at both ends instead of stopping cleanly — a
+   Nocturne signature. The ramp is 48px an end (one deck baseline unit),
+   painted from the same divider token. Freestanding rules fade; box
+   outlines, in-control separators, and short accent marks stay solid. */
+.hr {
+  height: 1px; border: 0; margin: var(--space-4) 0;
+  background: linear-gradient(to right,
+    transparent, var(--color-divider) 48px,
+    var(--color-divider) calc(100% - 48px), transparent);
+}
+
+/* — buttons — */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  cursor: pointer; text-decoration: none;
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 14px; line-height: 1.2; color: var(--color-text); /* matches the .input's 14px —
+     the pair sits side by side in sign-up rows */
+  background: transparent; border: 1px solid transparent;
+  padding: var(--space-2) calc(var(--space-3) * 1.2);
+  border-radius: var(--radius-md);
+}
+.btn svg { display: block; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary { color: var(--color-accent); border-color: var(--color-accent); }
+.btn-primary:hover { background: color-mix(in srgb, var(--color-accent) 12%, transparent); }
+.btn-primary:active { background: color-mix(in srgb, var(--color-accent) 22%, transparent); }
+.btn-secondary { border-color: var(--color-divider); }
+.btn-secondary:hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+.btn-secondary:active { background: color-mix(in srgb, var(--color-text) 14%, transparent); }
+.btn-ghost { color: var(--color-accent); padding-inline: var(--space-1); }
+.btn-ghost:hover { background: color-mix(in srgb, var(--color-accent) 10%, transparent); }
+.btn-ghost:active { background: color-mix(in srgb, var(--color-accent) 18%, transparent); }
+.btn-icon { width: 36px; height: 36px; padding: 0; }
+.btn-block { width: 100%; margin-top: var(--space-2); }
+
+/* — forms — */
+.field > label {
+  display: block; font-size: 12px; margin-bottom: 5px;
+  color: color-mix(in srgb, var(--color-text) 70%, transparent);
+}
+.input {
+  width: 100%; min-height: 36px; padding: 6px 10px; font: inherit;
+  font-size: 14px; color: var(--color-text); caret-color: var(--color-accent);
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider); border-radius: var(--radius-md);
+}
+.input:hover { border-color: color-mix(in srgb, var(--color-text) 45%, transparent); }
+.input:focus-visible { border-color: var(--color-accent); outline-offset: 0; }
+textarea.input { min-height: 90px; resize: vertical; }
+.radio { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
+.radio input, .seg-opt input {
+  position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;
+}
+.radio .dot {
+  width: 16px; height: 16px; flex: none; border-radius: 50%;
+  border: 1.5px solid var(--color-divider);
+}
+.radio:hover .dot { border-color: var(--color-accent); }
+.radio input:checked + .dot {
+  border-color: var(--color-accent); background: var(--color-accent);
+  box-shadow: inset 0 0 0 4px var(--color-bg);
+}
+.radio input:focus-visible + .dot { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.seg {
+  display: inline-flex; overflow: hidden;
+  border: 1px solid var(--color-divider); border-radius: var(--radius-md);
+}
+.seg-opt {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 12px; font-size: 13px; cursor: pointer;
+}
+.seg-opt + .seg-opt { border-left: 1px solid var(--color-divider); }
+.seg-opt:has(input:checked) { color: var(--color-accent); box-shadow: inset 0 0 0 1px var(--color-accent); }
+.seg-opt:not(:has(input:checked)):hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+.seg-opt:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+
+/* — cards — */
+.card {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-3); border-radius: var(--radius-md); background: var(--color-surface);
+}
+.card-kicker { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-accent); }
+.card-title {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 17px; line-height: 1.2;
+}
+.card-body { margin: 0; font-size: 13px; opacity: 0.8; flex: 1; }
+.card-meta {
+  display: flex; align-items: center; gap: 6px; font-size: 11px;
+  color: color-mix(in srgb, var(--color-text) 50%, transparent);
+}
+.elev-sm { box-shadow: var(--shadow-sm); }
+.elev-md { box-shadow: var(--shadow-md); }
+.elev-lg { box-shadow: var(--shadow-lg); }
+
+/* — tags — */
+.tag {
+  display: inline-flex; align-items: center; font-size: 11px;
+  letter-spacing: 0.02em; padding: 3px 10px;
+  border-radius: calc(var(--radius-md) * 0.75);
+}
+.tag-accent { background: var(--color-accent-800); color: var(--color-accent-100); }
+.tag-accent-2 { background: var(--color-accent-2-800); color: var(--color-accent-2-100); }
+.tag-neutral { background: var(--color-neutral-800); color: var(--color-neutral-100); }
+.tag-outline { border: 1px solid var(--color-accent); color: var(--color-accent); }
+
+/* — navigation — */
+.nav {
+  display: flex; align-items: center; gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: none;
+}
+.nav-brand {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 18px; margin-right: auto;
+}
+.nav a { color: inherit; text-decoration: none; font-size: 14px; }
+.nav a:hover, .nav a[aria-current='page'] { color: var(--color-accent); }
+
+/* — tables — */
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th {
+  text-align: left; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+  padding: var(--space-2); border-bottom: 1px solid transparent; /* keeps layout; the row paints the fading rule */
+}
+.table td {
+  padding: var(--space-2);
+  border-bottom: 1px solid transparent;
+}
+/* Row rules as row-level strips so the end-fade spans the row, not each cell. */
+.table thead tr {
+  background: linear-gradient(to right,
+    transparent, var(--color-divider) 48px,
+    var(--color-divider) calc(100% - 48px), transparent) no-repeat bottom / 100% 1px;
+}
+.table tbody tr {
+  background: linear-gradient(to right,
+    transparent, color-mix(in srgb, var(--color-text) 8%, transparent) 48px,
+    color-mix(in srgb, var(--color-text) 8%, transparent) calc(100% - 48px), transparent) no-repeat bottom / 100% 1px;
+}
+.table tbody tr:hover {
+  /* the hover tint layers over the row rule, which keeps painting */
+  background:
+    linear-gradient(color-mix(in srgb, var(--color-text) 4%, transparent),
+                    color-mix(in srgb, var(--color-text) 4%, transparent)) no-repeat 0 0 / 100% 100%,
+    linear-gradient(to right,
+      transparent, color-mix(in srgb, var(--color-text) 8%, transparent) 48px,
+      color-mix(in srgb, var(--color-text) 8%, transparent) calc(100% - 48px), transparent) no-repeat bottom / 100% 1px;
+}
+
+/* — dialog — */
+.dialog-backdrop {
+  position: fixed; inset: 0; display: grid; place-items: center;
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--color-neutral-900) 50%, transparent);
+}
+.dialog {
+  width: min(440px, 100%); display: flex; flex-direction: column; gap: var(--space-3);
+  padding: var(--space-4); border-radius: var(--radius-lg);
+  background: var(--color-surface); box-shadow: var(--shadow-lg);
+}
+.dialog-title {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 20px;
+}
+.dialog-body { font-size: 14px; opacity: 0.85; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-2); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Poker layer — the table's own vocabulary. Cards, chips, the pot, seats and
+   the action bar, plus the dopamine keyframes the game screen plays. Every
+   value still comes from the tokens above; the felt and the gold glow are the
+   only saturated fields, carried as presence.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* — the felt — a burgundy velvet bloom, darker at the rail — */
+.felt {
+  background:
+    radial-gradient(120% 120% at 50% 42%, var(--color-felt-glow) 0%, var(--color-felt) 46%, var(--color-felt-edge) 100%);
+  position: relative;
+}
+.felt::after { /* woven grain */
+  content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.05) 0 2px, transparent 2px 4px);
+  opacity: 0.5;
+}
+
+/* an amount that reads as money, not data */
+.amount { font-family: var(--font-display); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: 0.01em; }
+
+/* — playing card — a 5:7 flip card. Add .face-up to reveal the face. — */
+.pcard { --w: 62px; width: var(--w); aspect-ratio: 5/7; perspective: 700px; flex: none; }
+.pcard-inner {
+  position: relative; width: 100%; height: 100%; transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(.2,.7,.2,1.4);
+}
+.pcard.face-up .pcard-inner { transform: rotateY(180deg); }
+.pcard-face, .pcard-back {
+  position: absolute; inset: 0; backface-visibility: hidden; border-radius: calc(var(--w) * 0.13);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,0,0,0.25);
+}
+.pcard-back {
+  background:
+    repeating-linear-gradient(45deg, transparent 0 6px, color-mix(in srgb, var(--color-accent) 22%, transparent) 6px 7px),
+    repeating-linear-gradient(-45deg, transparent 0 6px, color-mix(in srgb, var(--color-accent) 22%, transparent) 6px 7px),
+    linear-gradient(160deg, var(--color-accent-2-700), var(--color-accent-2-900));
+  border: 2px solid transparent; background-clip: padding-box;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 55%, transparent), 0 2px 8px rgba(0,0,0,0.5);
+}
+.pcard-face {
+  transform: rotateY(180deg); background: linear-gradient(160deg, #fbf7ef, #efe4d3);
+  display: grid; place-items: center; padding: calc(var(--w) * 0.08);
+  font-family: var(--font-display); font-weight: 700; color: var(--color-neutral-900);
+}
+/* opacity fallback so the face never shows through the back in renderers that
+   don't honor backface-visibility; swaps at mid-flip (half of the 0.5s turn) */
+.pcard-face { opacity: 0; }
+.pcard-back { opacity: 1; }
+.pcard.face-up .pcard-face { opacity: 1; }
+.pcard.face-up .pcard-back { opacity: 0; }
+.pcard-face, .pcard-back { transition: opacity 0s linear 0.25s; }
+.pcard-face.is-red { color: #b3263b; }
+.pcard-face.is-black { color: #241d19; }
+.pcard-corner {
+  position: absolute; top: calc(var(--w) * 0.08); left: calc(var(--w) * 0.11);
+  display: flex; flex-direction: column; align-items: center; line-height: 0.82;
+  font-size: calc(var(--w) * 0.26);
+}
+.pcard-corner .s { font-size: calc(var(--w) * 0.2); }
+.pcard-pip { font-size: calc(var(--w) * 0.5); }
+.pcard-sm { --w: 46px; }
+.pcard-lg { --w: 80px; }
+.pcard.dealt { animation: card-deal 0.45s cubic-bezier(.2,.8,.25,1) backwards; }
+
+/* — chips — a denomination disc with a dashed edge; set --chip via inline style — */
+.chip {
+  --chip: var(--color-accent-2-500); width: 40px; height: 40px; border-radius: 50%; flex: none;
+  background:
+    radial-gradient(circle at 50% 40%, color-mix(in srgb, #fff 22%, var(--chip)) 0 28%, var(--chip) 29% 62%, color-mix(in srgb, #000 22%, var(--chip)) 63%),
+    repeating-conic-gradient(var(--chip) 0deg 18deg, #f6efe6 18deg 30deg);
+  background-clip: content-box, border-box; padding: 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.3);
+  display: grid; place-items: center;
+  font-family: var(--font-display); font-weight: 700; font-size: 12px; color: #fbf7ef;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+.chip-stack { display: flex; flex-direction: column-reverse; align-items: center; }
+.chip-stack > .chip { margin-top: -32px; }
+.chip-stack > .chip:first-child { margin-top: 0; }
+
+/* — the pot — center of the world, gold-ringed — */
+.pot {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: 6px 16px; border-radius: 999px;
+  background: color-mix(in srgb, var(--color-felt-edge) 70%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 45%, transparent), 0 4px 16px rgba(0,0,0,0.5);
+  color: var(--color-accent-200);
+}
+.pot-label { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-accent-400); }
+.pot .amount { font-size: 26px; color: var(--color-accent-100); }
+.pot.collect { animation: pot-pop 0.5s ease; }
+
+/* — player seat — */
+.seat { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 128px; transition: opacity 0.3s; }
+.seat-avatar {
+  width: 60px; height: 60px; border-radius: 50%; position: relative; display: grid; place-items: center;
+  background: linear-gradient(160deg, var(--color-neutral-700), var(--color-neutral-900));
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-accent) 30%, transparent);
+  font-family: var(--font-display); font-size: 24px; font-weight: 600; color: var(--color-accent-200);
+}
+.seat-plate {
+  width: 100%; text-align: center; padding: 4px 8px; border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  box-shadow: var(--shadow-sm);
+}
+.seat-name { font-size: 11px; color: var(--color-neutral-300); letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.seat-stack { font-family: var(--font-display); font-weight: 600; font-size: 17px; color: var(--color-accent-200); }
+.seat.is-active .seat-avatar { box-shadow: var(--glow-gold); animation: seat-breathe 1.6s ease-in-out infinite; }
+.seat.is-folded { opacity: 0.38; }
+.seat.is-winner .seat-avatar { animation: winner-glow 0.9s ease-in-out 3; }
+/* dealer button */
+.dealer-btn {
+  width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(circle at 40% 35%, #fbf7ef, #cba14e); color: #3a2b15;
+  font-family: var(--font-display); font-weight: 700; font-size: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.2);
+}
+/* countdown timer ring under an active seat */
+.seat-timer { width: 60px; height: 3px; border-radius: 2px; overflow: hidden; background: color-mix(in srgb, var(--color-text) 12%, transparent); }
+.seat-timer > i { display: block; height: 100%; background: var(--color-accent); transform-origin: left; animation: timer-drain 12s linear forwards; }
+
+/* — action bar — the dopamine buttons — */
+.action-bar { display: flex; align-items: center; gap: var(--space-3); }
+.act {
+  min-width: 96px; padding: 10px 18px; border-radius: var(--radius-md); cursor: pointer;
+  font-family: var(--font-heading); font-weight: 600; font-size: 15px; letter-spacing: 0.02em;
+  background: transparent; color: var(--color-text); border: 1px solid var(--color-divider);
+  transition: transform 0.08s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.act:active { animation: press-pulse 0.22s ease; }
+.act-fold { color: var(--color-accent-2-300); border-color: color-mix(in srgb, var(--color-accent-2) 55%, transparent); }
+.act-fold:hover { background: color-mix(in srgb, var(--color-accent-2) 16%, transparent); }
+.act-check, .act-call { color: var(--color-accent-200); border-color: color-mix(in srgb, var(--color-accent) 50%, transparent); }
+.act-check:hover, .act-call:hover { background: color-mix(in srgb, var(--color-accent) 12%, transparent); }
+/* raise is the one saturated fill in the interface — the payoff button */
+.act-raise {
+  color: #2b0e13; border-color: transparent; font-weight: 700;
+  background: linear-gradient(160deg, var(--color-accent-300), var(--color-accent-600));
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
+.act-raise:hover { box-shadow: var(--glow-gold); transform: translateY(-1px); }
+
+/* bet slider */
+.bet-slider { -webkit-appearance: none; appearance: none; width: 180px; height: 4px; border-radius: 3px; background: var(--color-neutral-800); outline: none; }
+.bet-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #fbf7ef, var(--color-accent)); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 22%, transparent); cursor: pointer; }
+.bet-slider::-moz-range-thumb { width: 18px; height: 18px; border: 0; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #fbf7ef, var(--color-accent)); cursor: pointer; }
+
+/* — staging effects — */
+/* a gold burst ring, mount on a positioned element */
+.gold-burst { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
+.gold-burst::before {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 20px; height: 20px; border-radius: 50%;
+  transform: translate(-50%,-50%); box-shadow: 0 0 0 2px var(--color-accent);
+  animation: burst-ring 0.8s ease-out forwards;
+}
+/* all-in overlay: a full-bleed gold flash */
+.allin-flash { position: fixed; inset: 0; pointer-events: none; z-index: 90; background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--color-accent) 55%, transparent), transparent 60%); animation: allin-flash 0.7s ease-out forwards; }
+.shake { animation: table-shake 0.5s cubic-bezier(.36,.07,.19,.97); }
+
+@keyframes card-deal { from { transform: translate(var(--dx, -360px), var(--dy, -220px)) rotate(var(--dr, -40deg)) scale(0.7); opacity: 0; } to { transform: translate(0,0) rotate(0) scale(1); opacity: 1; } }
+@keyframes press-pulse { 0% { transform: scale(1); } 40% { transform: scale(0.94); } 100% { transform: scale(1); } }
+@keyframes pot-pop { 0% { transform: scale(1); } 45% { transform: scale(1.18); box-shadow: var(--glow-gold); } 100% { transform: scale(1); } }
+@keyframes seat-breathe { 0%,100% { box-shadow: var(--glow-gold); } 50% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent) 60%, transparent), 0 0 34px color-mix(in srgb, var(--color-accent) 60%, transparent); } }
+@keyframes winner-glow { 0%,100% { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-accent) 30%, transparent); } 50% { box-shadow: var(--glow-gold), 0 0 40px color-mix(in srgb, var(--color-accent) 70%, transparent); } }
+@keyframes timer-drain { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@keyframes burst-ring { 0% { width: 20px; height: 20px; opacity: 1; } 100% { width: 260px; height: 260px; opacity: 0; } }
+@keyframes allin-flash { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes table-shake { 10%,90% { transform: translate(-2px,0); } 20%,80% { transform: translate(4px,0); } 30%,50%,70% { transform: translate(-8px,0); } 40%,60% { transform: translate(8px,0); } }
+@keyframes chip-toss { from { transform: translate(0,0) scale(1); } to { transform: translate(var(--tx,0), var(--ty,0)) scale(0.8); } }
+

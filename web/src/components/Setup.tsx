@@ -40,9 +40,11 @@ export function Setup({ onDone }: { onDone: (cfg: FirebaseConfig) => void }) {
   return (
     <div className="screen">
       <div className="panel">
-        <h1>🃏 Texas Hold'em</h1>
-        <p className="muted">4인 원격 텍사스 홀덤 · Firebase 실시간 동기화</p>
-        <h2>Firebase 연결</h2>
+        <div>
+          <h1 className="brand">Nocturne</h1>
+          <div className="brand-sub">Texas Hold'em · 4 players</div>
+        </div>
+        <h4>Firebase 연결</h4>
         <ol className="steps">
           <li>Firebase 콘솔에서 프로젝트를 만들고 <b>Realtime Database</b>를 활성화하세요.</li>
           <li>프로젝트 설정 → 웹 앱 등록 후 <code>firebaseConfig</code> 객체를 복사하세요.</li>
@@ -56,7 +58,7 @@ export function Setup({ onDone }: { onDone: (cfg: FirebaseConfig) => void }) {
           rows={10}
         />
         {error && <div className="error">{error}</div>}
-        <button className="btn primary" onClick={submit}>연결</button>
+        <button className="btn btn-primary btn-block" onClick={submit}>연결</button>
       </div>
     </div>
   );

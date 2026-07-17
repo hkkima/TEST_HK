@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { GameState, ActionType } from '../types';
 
+const fmt = (n: number) => n.toLocaleString();
+
+// Nocturne action bar — fold / check / call outlined, raise the one gold fill.
 export function Controls({ game, seat, onAction, busy }: {
   game: GameState;
   seat: number;
@@ -22,35 +25,37 @@ export function Controls({ game, seat, onAction, busy }: {
   const callAmount = Math.min(toCall, s.chips);
 
   return (
-    <div className="controls">
-      <div className="control-row">
-        <button className="btn danger" disabled={busy} onClick={() => onAction('fold')}>폴드</button>
+    <div className="action-plate">
+      <div className="action-bar">
+        <button className="act act-fold" disabled={busy} onClick={() => onAction('fold')}>폴드</button>
         {canCheck ? (
-          <button className="btn" disabled={busy} onClick={() => onAction('check')}>체크</button>
+          <button className="act act-check" disabled={busy} onClick={() => onAction('check')}>체크</button>
         ) : (
-          <button className="btn" disabled={busy} onClick={() => onAction('call')}>
-            콜 {callAmount}{callAmount >= s.chips ? ' (올인)' : ''}
+          <button className="act act-call" disabled={busy} onClick={() => onAction('call')}>
+            콜 {fmt(callAmount)}{callAmount >= s.chips ? ' (올인)' : ''}
           </button>
         )}
         {canRaise && (
-          <button className="btn warn" disabled={busy}
+          <button className="act act-raise" disabled={busy}
             onClick={() => onAction(isBet ? 'bet' : 'raise', amount)}>
-            {isBet ? '벳' : '레이즈'} {amount}{amount >= maxTo ? ' (올인)' : ''}
+            {isBet ? '벳' : '레이즈'} {fmt(amount)}{amount >= maxTo ? ' (올인)' : ''}
           </button>
         )}
-        <button className="btn allin" disabled={busy} onClick={() => onAction('allin')}>올인 {maxTo}</button>
+        <button className="act act-check" disabled={busy} onClick={() => onAction('allin')}>
+          올인 {fmt(maxTo)}
+        </button>
       </div>
 
       {canRaise && (
-        <div className="control-row raise-row">
-          <input type="range" min={clampedMin} max={maxTo} step={1}
-            value={amount} onChange={(e) => setAmount(Number(e.target.value))} />
-          <input type="number" min={clampedMin} max={maxTo}
+        <div className="raise-row">
+          <input type="range" className="bet-slider" min={clampedMin} max={maxTo} step={1}
+            value={amount} onChange={(e) => setAmount(Number(e.target.value))} aria-label="베팅 금액" />
+          <input type="number" className="num" min={clampedMin} max={maxTo}
             value={amount} onChange={(e) => setAmount(Math.max(clampedMin, Math.min(maxTo, Number(e.target.value))))} />
           <div className="quick">
             {[0.5, 0.75, 1].map((f) => {
               const target = Math.min(maxTo, Math.max(clampedMin, Math.round((game.pot + toCall) * f) + game.currentBet));
-              return <button key={f} className="btn tiny" onClick={() => setAmount(target)}>
+              return <button key={f} className="btn btn-ghost" onClick={() => setAmount(target)}>
                 {f === 1 ? '팟' : `${f * 100}%`}
               </button>;
             })}
