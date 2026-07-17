@@ -164,10 +164,24 @@ function postBlind(game: GameState, seat: number, amount: number): void {
   if (s.chips === 0) s.allIn = true;
 }
 
+// Firebase Realtime DB drops empty arrays (stores them as null) and may return
+// arrays as objects. Rebuild them so the engine always sees real arrays.
+export function normalizeGame(game: GameState | null): void {
+  if (!game) return;
+  const asArray = (v: any): any[] => (Array.isArray(v) ? v : v && typeof v === 'object' ? Object.values(v) : []);
+  game.board = asArray(game.board);
+  game.deck = asArray(game.deck);
+  for (const k of Object.keys(game.seats || {})) {
+    const s = (game.seats as any)[k];
+    if (s && s.hole && !Array.isArray(s.hole)) s.hole = Object.values(s.hole);
+  }
+}
+
 // ---- applying an action ----------------------------------------------------
 
 export function applyAction(room: Room, seat: number, action: ActionType, rawAmount = 0): void {
   const game = room.game;
+  normalizeGame(game);
   if (!game) throw new Error('진행 중인 핸드가 없습니다.');
   if (game.result) throw new Error('핸드가 종료되었습니다.');
   if (game.toAct !== seat) throw new Error('당신의 차례가 아닙니다.');
