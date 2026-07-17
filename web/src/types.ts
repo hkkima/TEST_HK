@@ -32,6 +32,7 @@ export interface SeatState {
   allIn: boolean;
   actedThisRound: boolean;
   inHand: boolean;               // dealt into this hand
+  showFold?: boolean;            // player voluntarily revealed their folded hand
 }
 
 export interface PotResult {

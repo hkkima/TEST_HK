@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Room, ActionType } from '../types';
 import {
   subscribeRoom, startNewHand, doAction, addChips, leaveRoom,
-  getPlayerId, markPresence,
+  getPlayerId, markPresence, showFoldedHand,
 } from '../game/actions';
 import { canStartHand } from '../poker/engine';
 import { CardView } from './CardView';
@@ -12,7 +12,17 @@ export function Table({ roomId, seat, onLeave }: { roomId: string; seat: number;
   const [room, setRoom] = useState<Room | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  // Local-only: hide my own hole cards on screen so a neighbour can't peek.
+  const [hideMyCards, setHideMyCards] = useState(() => localStorage.getItem('holdem.hideCards') === '1');
   const myId = getPlayerId();
+
+  function toggleHideMyCards() {
+    setHideMyCards((v) => {
+      const next = !v;
+      localStorage.setItem('holdem.hideCards', next ? '1' : '0');
+      return next;
+    });
+  }
 
   useEffect(() => {
     const unsub = subscribeRoom(roomId, setRoom);
@@ -92,23 +102,42 @@ export function Table({ roomId, seat, onLeave }: { roomId: string; seat: number;
       const p = room!.players[s];
       return <div className="seat empty"><div className="seat-name">{p?.name}</div><div className="muted small">대기</div></div>;
     }
-    const myHole = isMe ? gs.hole : (reveal[s] || null);
-    const showCards = gs.inHand && !gs.folded;
+    // Cards others can see face-up: at showdown (reveal) or a voluntary fold-reveal.
+    const publiclyVisible = !!reveal[s] || !!gs.showFold;
+    const renderHole = () => {
+      if (!gs.inHand) return <div className="hole-empty">—</div>;
+      if (isMe) {
+        // I always see my own cards, but can hide them locally from neighbours.
+        return (
+          <>
+            <CardView card={gs.hole?.[0]} hidden={hideMyCards} small />
+            <CardView card={gs.hole?.[1]} hidden={hideMyCards} small />
+          </>
+        );
+      }
+      // Other players: hidden unless revealed. Folded & not revealed → just "—".
+      if (gs.folded && !gs.showFold) return <div className="hole-empty">—</div>;
+      return (
+        <>
+          <CardView card={gs.hole?.[0]} hidden={!publiclyVisible} small />
+          <CardView card={gs.hole?.[1]} hidden={!publiclyVisible} small />
+        </>
+      );
+    };
     return (
       <div className={`seat${isMe ? ' me' : ''}${isTurn ? ' turn' : ''}${gs.folded ? ' folded' : ''}${winners.has(s) ? ' winner' : ''}`}>
         <div className="seat-top">
           <span className="seat-name">{gs.name}{dealer && <span className="btn-badge">D</span>}</span>
           {gs.allIn && <span className="badge red">ALL-IN</span>}
           {gs.folded && <span className="badge">FOLD</span>}
+          {isMe && gs.inHand && (
+            <button className="btn-eye" onClick={toggleHideMyCards}
+              title={hideMyCards ? '내 손패 보기' : '내 손패 가리기'}>
+              {hideMyCards ? '🙈' : '👁'}
+            </button>
+          )}
         </div>
-        <div className="hole">
-          {showCards ? (
-            <>
-              <CardView card={myHole?.[0]} hidden={!isMe && !reveal[s]} small />
-              <CardView card={myHole?.[1]} hidden={!isMe && !reveal[s]} small />
-            </>
-          ) : <div className="hole-empty">—</div>}
-        </div>
+        <div className="hole">{renderHole()}</div>
         <div className="seat-chips">{gs.chips.toLocaleString()}</div>
         {gs.committedThisStreet > 0 && <div className="seat-bet">벳 {gs.committedThisStreet}</div>}
       </div>
@@ -144,6 +173,12 @@ export function Table({ roomId, seat, onLeave }: { roomId: string; seat: number;
 
       <div className="my-area">
         <SeatCard s={seat} />
+        {g.seats[seat]?.inHand && g.seats[seat]?.folded && (
+          g.seats[seat]?.showFold
+            ? <p className="muted small">내 패를 공개했습니다.</p>
+            : <button className="btn small-btn" disabled={busy}
+                onClick={() => run(() => showFoldedHand(roomId, seat))}>내 패 공개</button>
+        )}
         {myTurn && <Controls game={g} seat={seat} onAction={act} busy={busy} />}
         {!myTurn && !g.result && <p className="muted turn-wait">
           {g.toAct !== null ? `${g.seats[g.toAct]?.name}님의 차례…` : '진행 중…'}

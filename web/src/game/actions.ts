@@ -126,6 +126,11 @@ export async function addChips(roomId: string, seat: number, amount: number): Pr
   });
 }
 
+// Voluntarily reveal your own (folded) hole cards to everyone at the table.
+export async function showFoldedHand(roomId: string, seat: number): Promise<void> {
+  await update(ref(getDb(), `rooms/${roomId}/game/seats/${seat}`), { showFold: true });
+}
+
 export function subscribeRoom(roomId: string, cb: (room: Room | null) => void): Unsubscribe {
   return onValue(roomRef(roomId), (snap) => cb(snap.val()));
 }
