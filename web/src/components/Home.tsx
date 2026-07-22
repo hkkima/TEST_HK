@@ -49,7 +49,7 @@ export function Home({ onEnter }: { onEnter: (roomId: string, seat: number) => v
       <div className="panel">
         <div>
           <h1 className="brand">Nocturne</h1>
-          <div className="brand-sub">Texas Hold'em · 4 players</div>
+          <div className="brand-sub">Texas Hold'em · 2–9 players</div>
         </div>
 
         <div className="seg">

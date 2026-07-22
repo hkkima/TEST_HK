@@ -42,7 +42,7 @@ export function Setup({ onDone }: { onDone: (cfg: FirebaseConfig) => void }) {
       <div className="panel">
         <div>
           <h1 className="brand">Nocturne</h1>
-          <div className="brand-sub">Texas Hold'em · 4 players</div>
+          <div className="brand-sub">Texas Hold'em · 2–9 players</div>
         </div>
         <h4>Firebase 연결</h4>
         <ol className="steps">
