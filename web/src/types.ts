@@ -10,7 +10,7 @@ export interface RoomConfig {
   sbRatio: number;          // small blind = round(bb * sbRatio), default 0.5
   handsPerLevel: number;    // increase blinds every N hands
   blindMultiplier: number;  // new BB = round(BB * multiplier)
-  maxPlayers: number;       // fixed at 4
+  maxPlayers: number;       // 2..9 (chosen at room creation)
 }
 
 export interface PlayerRegistry {

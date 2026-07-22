@@ -9,13 +9,17 @@ import { getDb } from '../firebase';
 import { Room, RoomConfig, ActionType } from '../types';
 import { startHand, applyAction, occupiedSeats } from '../poker/engine';
 
+// Hold'em seats 2 hole cards each + 5 board from a 52-card deck (no burns),
+// so 9 players (2×9+5 = 23) is well within a single deck.
+export const MAX_PLAYERS = 9;
+
 export const DEFAULT_CONFIG: RoomConfig = {
   initialChips: 10000,
   initialBB: 100,
   sbRatio: 0.5,
   handsPerLevel: 6,
   blindMultiplier: 2,
-  maxPlayers: 4,
+  maxPlayers: 6,
 };
 
 export function makeId(len = 6): string {
@@ -65,8 +69,9 @@ export async function joinRoom(roomId: string, name: string, playerId: string): 
       }
     }
     const occ = occupiedSeats(room);
-    if (occ.length >= room.config.maxPlayers) throw new Error('방이 가득 찼습니다 (최대 4명).');
-    // Find first free seat 0..3.
+    const cap = room.config.maxPlayers || DEFAULT_CONFIG.maxPlayers;
+    if (occ.length >= cap) throw new Error(`방이 가득 찼습니다 (최대 ${cap}명).`);
+    // Find first free seat.
     let seat = 0;
     while (room.players[seat]) seat++;
     room.players[seat] = {

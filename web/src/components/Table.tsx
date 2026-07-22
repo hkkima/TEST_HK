@@ -80,7 +80,7 @@ export function Table({ roomId, seat, onLeave }: { roomId: string; seat: number;
             </div>
             <button className="btn btn-ghost" onClick={() => run(async () => { await leaveRoom(roomId, myId); onLeave(); })}>나가기</button>
           </div>
-          <p className="muted small">친구에게 방 코드 <b className="code">{roomId}</b> 를 공유하세요. (최대 4명)</p>
+          <p className="muted small">친구에게 방 코드 <b className="code">{roomId}</b> 를 공유하세요. (최대 {room.config.maxPlayers}명)</p>
           <div className="lobby-list">
             {seats.map((s) => (
               <div key={s} className={`lobby-player${!room.players[s].connected ? ' off' : ''}`}>

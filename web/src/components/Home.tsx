@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { RoomConfig } from '../types';
-import { createRoom, joinRoom, roomExists, getPlayerId, DEFAULT_CONFIG } from '../game/actions';
+import { createRoom, joinRoom, roomExists, getPlayerId, DEFAULT_CONFIG, MAX_PLAYERS } from '../game/actions';
 import { clearConfig } from '../firebase';
 
 export function Home({ onEnter }: { onEnter: (roomId: string, seat: number) => void }) {
@@ -91,8 +91,13 @@ export function Home({ onEnter }: { onEnter: (roomId: string, seat: number) => v
                 <input className="input" type="number" step="0.1" value={cfg.blindMultiplier}
                   onChange={(e) => setCfg({ ...cfg, blindMultiplier: Math.max(1.1, Number(e.target.value) || 2) })} />
               </div>
+              <div className="field">
+                <label>최대 인원 (2~{MAX_PLAYERS})</label>
+                <input className="input" type="number" min={2} max={MAX_PLAYERS} value={cfg.maxPlayers}
+                  onChange={(e) => setCfg({ ...cfg, maxPlayers: Math.max(2, Math.min(MAX_PLAYERS, num(e.target.value, 2))) })} />
+              </div>
             </div>
-            <p className="muted small">SB는 BB의 절반, 최대 4인. {cfg.handsPerLevel}핸드마다 BB가 ×{cfg.blindMultiplier} 상승합니다.</p>
+            <p className="muted small">SB는 BB의 절반, 최대 {cfg.maxPlayers}인. {cfg.handsPerLevel}핸드마다 BB가 ×{cfg.blindMultiplier} 상승합니다.</p>
             <button className="btn btn-primary btn-block" disabled={busy} onClick={handleCreate}>방 만들기</button>
           </>
         ) : (
