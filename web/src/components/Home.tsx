@@ -96,8 +96,16 @@ export function Home({ onEnter }: { onEnter: (roomId: string, seat: number) => v
                 <input className="input" type="number" min={2} max={MAX_PLAYERS} value={cfg.maxPlayers}
                   onChange={(e) => setCfg({ ...cfg, maxPlayers: Math.max(2, Math.min(MAX_PLAYERS, num(e.target.value, 2))) })} />
               </div>
+              <div className="field">
+                <label>행동 제한시간 (초, 0=무제한)</label>
+                <input className="input" type="number" min={0} max={120} step={5} value={cfg.actionTimerSec ?? 0}
+                  onChange={(e) => setCfg({ ...cfg, actionTimerSec: Math.max(0, Math.min(120, Math.floor(Number(e.target.value)) || 0)) })} />
+              </div>
             </div>
-            <p className="muted small">SB는 BB의 절반, 최대 {cfg.maxPlayers}인. {cfg.handsPerLevel}핸드마다 BB가 ×{cfg.blindMultiplier} 상승합니다.</p>
+            <p className="muted small">
+              SB는 BB의 절반, 최대 {cfg.maxPlayers}인. {cfg.handsPerLevel}핸드마다 BB가 ×{cfg.blindMultiplier} 상승.
+              {cfg.actionTimerSec ? ` 행동 제한 ${cfg.actionTimerSec}초(초과 시 자동 체크/폴드).` : ' 행동 시간 무제한.'}
+            </p>
             <button className="btn btn-primary btn-block" disabled={busy} onClick={handleCreate}>방 만들기</button>
           </>
         ) : (

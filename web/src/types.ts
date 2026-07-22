@@ -11,6 +11,7 @@ export interface RoomConfig {
   handsPerLevel: number;    // increase blinds every N hands
   blindMultiplier: number;  // new BB = round(BB * multiplier)
   maxPlayers: number;       // 2..9 (chosen at room creation)
+  actionTimerSec?: number;  // per-action time limit in seconds (0 / undefined = off)
 }
 
 export interface PlayerRegistry {
@@ -62,6 +63,7 @@ export interface GameState {
   currentBet: number;     // highest committedThisStreet this round
   minRaise: number;       // minimum raise increment
   toAct: number | null;   // seat index whose turn it is
+  deadline?: number | null; // epoch ms by which toAct must act (if timer on)
   seats: Record<number, SeatState>;
   result: HandResult | null;
   lastAction: string;     // human readable, e.g. "Bob raised to 200"

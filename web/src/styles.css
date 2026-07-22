@@ -72,40 +72,46 @@ body {
 .badge.gold { background: var(--color-accent-800); color: var(--color-accent-100); }
 
 /* ---- table screen ---- */
-.table-screen { justify-content: flex-start; gap: var(--space-3); padding-bottom: var(--space-8); }
-.table-header {
-  width: 100%; max-width: 560px; display: flex; align-items: center;
-  justify-content: space-between; gap: var(--space-3); font-size: 13px;
-  color: var(--color-neutral-300); padding-top: var(--space-2);
+/* Table fills the viewport — no page scroll on desktop. */
+.table-screen {
+  height: 100dvh; min-height: 560px; padding: 0; gap: 0;
+  justify-content: flex-start; align-items: stretch; overflow: hidden;
 }
-.table-header .hand-info { text-align: center; }
+.table-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-3); font-size: 13px; color: var(--color-neutral-300);
+  padding: var(--space-3) var(--space-6); flex: none; z-index: 20;
+}
+.hdr-left { display: flex; align-items: center; gap: var(--space-6); }
+.table-header .hand-info { display: flex; flex-direction: column; line-height: 1.25; }
 .table-header .hand-info .line1 {
-  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--color-accent-400);
 }
 
-.opponents {
-  display: flex; gap: var(--space-3); justify-content: center;
-  flex-wrap: wrap; width: 100%; max-width: 560px;
+/* the oval table area — seats absolutely placed around a burgundy felt */
+.felt-wrap { position: relative; flex: 1; min-height: 0; }
+.felt-oval {
+  position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%);
+  width: min(700px, 66vw); height: min(340px, 52vh);
+  border-radius: 50% / 50%;
+  box-shadow:
+    inset 0 0 0 9px var(--color-felt-edge),
+    inset 0 0 0 12px color-mix(in srgb, var(--color-accent) 26%, transparent),
+    0 30px 80px rgba(0,0,0,.6);
 }
 
-/* board on the felt */
-.board-area {
-  width: 100%; max-width: 560px; display: flex; flex-direction: column;
-  align-items: center; gap: var(--space-3);
-  padding: var(--space-6) var(--space-4);
-  border-radius: calc(var(--radius-lg) * 2);
-  box-shadow:
-    inset 0 0 0 6px var(--color-felt-edge),
-    inset 0 0 0 8px color-mix(in srgb, var(--color-accent) 30%, transparent),
-    0 24px 60px rgba(0,0,0,.55);
+.center-stack {
+  position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-3);
+  z-index: 4; width: max-content; max-width: 92vw;
 }
 .board { display: flex; gap: var(--space-2); justify-content: center; }
-.last-action { font-size: 12px; color: var(--color-neutral-300); min-height: 16px; text-align: center; }
+.last-action { font-size: 12px; color: var(--color-accent-200); min-height: 16px; text-align: center; }
 .result-banner {
   position: relative; text-align: center;
   padding: var(--space-3) var(--space-6); border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-felt-edge) 84%, transparent);
+  background: color-mix(in srgb, var(--color-felt-edge) 88%, transparent);
   box-shadow: var(--glow-gold); font-size: 14px; color: var(--color-accent-100);
 }
 .result-banner .win-label {
@@ -113,43 +119,58 @@ body {
   color: var(--color-accent-400); margin-bottom: 2px;
 }
 
-/* seats (app layout: fixed-width DS seats in a row) */
-.seat .btn-eye {
-  background: transparent; border: none; cursor: pointer; font-size: 14px;
-  line-height: 1; padding: 2px; border-radius: var(--radius-sm);
-  position: absolute; top: -4px; right: -6px;
-}
-.seat .btn-eye:hover { background: color-mix(in srgb, var(--color-text) 12%, transparent); }
-.seat { position: relative; }
+/* a seat sitting on the oval */
+.ring-seat { position: absolute; transform: translate(-50%, -50%); z-index: 6; }
+.seat { position: relative; width: 104px; }
+/* denser tables (7-9 players) shrink the seats so they don't collide */
+.crowded .ring-seat .seat { width: 88px; }
+.crowded .ring-seat .pcard-sm { --w: 38px; }
+.crowded .ring-seat .seat-avatar { width: 48px; height: 48px; font-size: 19px; }
+.seat-tags { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; z-index: 3; }
 .seat-cards { display: flex; gap: 4px; justify-content: center; margin-bottom: 5px; min-height: calc(46px * 7 / 5); align-items: center; }
-.seat-cards.lg { min-height: calc(80px * 7 / 5); }
-.hole-empty { color: var(--color-neutral-600); font-size: 18px; }
+.hole-empty { color: var(--color-neutral-600); font-size: 16px; }
 .seat-bet {
-  margin-top: 3px; display: inline-flex; align-items: center; gap: 5px;
-  font-size: 12px; color: var(--color-accent-200);
+  position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%);
+  display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+  font-size: 12px; color: var(--color-accent-200); z-index: 4;
 }
 .seat-bet .mini-chip {
   width: 14px; height: 14px; border-radius: 50%; flex: none;
   background: radial-gradient(circle at 40% 35%, color-mix(in srgb, #fff 25%, var(--color-accent-2-500)), var(--color-accent-2-600));
   box-shadow: 0 1px 3px rgba(0,0,0,.5), inset 0 0 0 1px rgba(0,0,0,.3);
 }
-.seat-tags { position: absolute; top: -6px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; z-index: 2; }
-
-/* my area */
-.my-area {
-  width: 100%; max-width: 560px; display: flex; flex-direction: column;
-  align-items: center; gap: var(--space-3);
+.tbar {
+  width: 56px; height: 3px; border-radius: 2px; margin: 3px auto 0; overflow: hidden;
+  background: color-mix(in srgb, var(--color-text) 14%, transparent);
 }
-.my-row { display: flex; align-items: center; gap: var(--space-6); }
-.turn-wait { font-size: 13px; letter-spacing: 0.06em; color: var(--color-neutral-400); }
+.tbar > i { display: block; height: 100%; transition: width 0.25s linear; }
+
+/* hero dock — my cards, meta and the action bar, pinned to the bottom */
+.hero-dock {
+  position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+  width: min(640px, 96vw); z-index: 15;
+}
+.hero-cards { display: flex; gap: 9px; justify-content: center; min-height: calc(80px * 7 / 5); align-items: center; }
+.hero-meta {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: 5px 14px; border-radius: 999px;
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent); box-shadow: var(--shadow-sm);
+}
+.hero-name { font-size: 13px; color: var(--color-neutral-200); display: inline-flex; align-items: center; }
+.hero-meta .seat-stack { font-size: 16px; }
+.hero-meta .btn-eye { background: transparent; border: none; cursor: pointer; font-size: 15px; line-height: 1; padding: 2px; border-radius: var(--radius-sm); }
+.hero-meta .btn-eye:hover { background: color-mix(in srgb, var(--color-text) 12%, transparent); }
+.countdown { font-family: var(--font-display); font-weight: 700; font-size: 18px; color: var(--color-accent-200); font-variant-numeric: tabular-nums; }
+.countdown.low { color: var(--color-accent-2-300); }
+.turn-wait { font-size: 13px; letter-spacing: 0.06em; color: var(--color-neutral-400); padding: var(--space-2) 0; }
 
 /* action bar wrapper (DS .action-bar + surface plate) */
 .action-plate {
-  display: flex; flex-direction: column; gap: var(--space-3); align-items: center;
+  display: flex; flex-direction: column; gap: var(--space-2); align-items: center;
   background: color-mix(in srgb, var(--color-surface) 82%, transparent);
   padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md); backdrop-filter: blur(4px);
-  width: 100%;
+  box-shadow: var(--shadow-md); backdrop-filter: blur(4px); width: 100%;
 }
 .action-bar { flex-wrap: wrap; justify-content: center; }
 .raise-row { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; justify-content: center; }
@@ -179,9 +200,14 @@ body {
 }
 .config-input:focus-visible { border-color: var(--color-accent); outline-offset: 0; }
 
-@media (max-width: 480px) {
-  .pcard-lg { --w: 64px; }
-  .opponents .seat { width: 104px; }
-  .act { min-width: 76px; padding: 9px 12px; font-size: 14px; }
-  .bet-slider { width: 140px; }
+@media (max-width: 560px) {
+  .pcard-lg { --w: 58px; }
+  .center-stack .pcard { --w: 40px; }
+  .ring-seat .seat { width: 84px; }
+  .ring-seat .pcard-sm { --w: 34px; }
+  .seat-avatar { width: 46px; height: 46px; font-size: 18px; }
+  .act { min-width: 70px; padding: 8px 10px; font-size: 13px; }
+  .bet-slider { width: 130px; }
+  .felt-oval { width: 90vw; height: min(300px, 46vh); }
+  .table-header { padding: var(--space-2) var(--space-3); font-size: 12px; }
 }

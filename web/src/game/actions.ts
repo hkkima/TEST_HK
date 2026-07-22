@@ -20,7 +20,20 @@ export const DEFAULT_CONFIG: RoomConfig = {
   handsPerLevel: 6,
   blindMultiplier: 2,
   maxPlayers: 6,
+  actionTimerSec: 0,
 };
+
+// Stamp / clear the action deadline based on the room's timer setting.
+function applyDeadline(room: Room): void {
+  const g = room.game;
+  if (!g) return;
+  const t = room.config.actionTimerSec || 0;
+  if (t > 0 && g.toAct !== null && !g.result) {
+    g.deadline = Date.now() + t * 1000;
+  } else {
+    g.deadline = null;
+  }
+}
 
 export function makeId(len = 6): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -106,6 +119,7 @@ export async function startNewHand(roomId: string): Promise<void> {
   await runTransaction(roomRef(roomId), (room: Room | null) => {
     if (!room) throw new Error('방을 찾을 수 없습니다.');
     startHand(room);
+    applyDeadline(room);
     return room;
   });
 }
@@ -116,6 +130,23 @@ export async function doAction(
   await runTransaction(roomRef(roomId), (room: Room | null) => {
     if (!room) throw new Error('방을 찾을 수 없습니다.');
     applyAction(room, seat, action, amount);
+    applyDeadline(room);
+    return room;
+  });
+}
+
+// Auto-act for the current player when their action clock has run out.
+// Any client may call this once its local clock passes the deadline; the
+// transaction validates so only the first one to land takes effect.
+export async function timeoutAction(roomId: string): Promise<void> {
+  await runTransaction(roomRef(roomId), (room: Room | null) => {
+    const g = room?.game;
+    if (!room || !g || g.result || g.toAct === null) return room ?? undefined;
+    if (!g.deadline || Date.now() < g.deadline) return room; // not expired yet
+    const s = g.seats[g.toAct];
+    const canCheck = (g.currentBet - s.committedThisStreet) <= 0;
+    applyAction(room, g.toAct, canCheck ? 'check' : 'fold');
+    applyDeadline(room);
     return room;
   });
 }
