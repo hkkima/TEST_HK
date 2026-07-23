@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Room, ActionType, GameState } from '../types';
 import {
-  subscribeRoom, startNewHand, doAction, addChips, leaveRoom,
+  subscribeRoom, startNewHand, doAction, rebuy, rebuyStatus, leaveRoom,
   getPlayerId, markPresence, showFoldedHand, timeoutAction,
 } from '../game/actions';
 import { canStartHand } from '../poker/engine';
+import { madeHandName, estimateEquity } from '../poker/odds';
 import { CardView } from './CardView';
 import { Controls } from './Controls';
 
@@ -96,6 +97,24 @@ export function Table({ roomId, seat, onLeave }: { roomId: string; seat: number;
     return Object.values(game.seats).reduce((a, s) => a + (s.committedThisStreet || 0), 0);
   }, [game]);
 
+  // My made hand + a Monte-Carlo win estimate. Memoised on the actual inputs so
+  // the countdown ticker (which re-renders every 250ms) never re-runs the sim.
+  const mySeatState = game?.seats?.[seat];
+  const holeKey = mySeatState?.hole?.join('') || '';
+  const boardKey = (game?.board || []).join('');
+  const activeOpp = game && !game.result
+    ? Object.values(game.seats).filter((s) => s.inHand && !s.folded).length - 1
+    : 0;
+  const myHand = useMemo(() => {
+    if (!mySeatState?.hole || mySeatState.folded || !mySeatState.inHand) return null;
+    return madeHandName(mySeatState.hole, game?.board || []);
+  }, [holeKey, boardKey, mySeatState?.folded, mySeatState?.inHand]);
+  const myEquity = useMemo(() => {
+    if (!mySeatState?.hole || mySeatState.folded || !mySeatState.inHand || game?.result) return null;
+    if (activeOpp < 1) return null;
+    return estimateEquity(mySeatState.hole, game?.board || [], activeOpp, 1200);
+  }, [holeKey, boardKey, activeOpp, mySeatState?.folded, mySeatState?.inHand, !!game?.result]);
+
   if (!room) return <div className="screen"><div className="panel"><p>방을 불러오는 중…</p></div></div>;
 
   const seats = Object.keys(room.players || {}).map(Number).filter((s) => room.players[s]).sort((a, b) => a - b);
@@ -173,12 +192,8 @@ export function Table({ roomId, seat, onLeave }: { roomId: string; seat: number;
       winners.has(s) ? 'is-winner' : '',
     ].filter(Boolean).join(' ');
     return (
-      <div className="ring-seat" style={style}>
+      <div className="ring-seat" style={{ ...style, zIndex: isTurn ? 9 : gs.committedThisStreet > 0 ? 8 : 6 }}>
         <div className={seatCls}>
-          <div className="seat-tags">
-            {gs.allIn && <span className="badge red">ALL-IN</span>}
-            {gs.folded && <span className="badge">FOLD</span>}
-          </div>
           <div className="seat-cards">
             {showFace ? (
               <>
@@ -190,6 +205,8 @@ export function Table({ roomId, seat, onLeave }: { roomId: string; seat: number;
           <div className="seat-avatar">
             {gs.name[0]}
             {g.dealerSeat === s && <span className="dealer-btn" style={{ position: 'absolute', bottom: -3, right: -3 }}>D</span>}
+            {gs.folded && <span className="status-chip fold">FOLD</span>}
+            {gs.allIn && <span className="status-chip allin">ALL-IN</span>}
           </div>
           {isTurn && timerSec > 0 && (
             <div className="tbar"><i style={{ width: `${timerFrac * 100}%`, background: timerFrac < 0.25 ? 'var(--color-accent-2-400)' : 'var(--color-accent)' }} /></div>
@@ -212,6 +229,7 @@ export function Table({ roomId, seat, onLeave }: { roomId: string; seat: number;
   const meInHand = me && me.inHand && !me.folded && !me.allIn;
   const myTurn = g.toAct === seat && !g.result && meInHand;
   const myCountdown = myTurn && timerSec > 0 ? Math.ceil(remainMs / 1000) : null;
+  const rebuyInfo = rebuyStatus(room, seat);
 
   return (
     <div className="screen table-screen">
@@ -223,7 +241,15 @@ export function Table({ roomId, seat, onLeave }: { roomId: string; seat: number;
             <span>블라인드 <span className="amount">{fmt(g.sb)}/{fmt(g.bb)}</span></span>
           </span>
         </div>
-        <button className="btn btn-ghost" onClick={() => run(async () => { await leaveRoom(roomId, myId); onLeave(); })}>나가기</button>
+        <div className="hdr-right">
+          {me?.inHand && (
+            <button className="btn btn-secondary hide-toggle" onClick={toggleHideMyCards}
+              title="옆자리에서 못 보게 내 손패를 가립니다">
+              {hideMyCards ? '🙈 손패 숨김' : '👁 손패 보기'}
+            </button>
+          )}
+          <button className="btn btn-ghost" onClick={() => run(async () => { await leaveRoom(roomId, myId); onLeave(); })}>나가기</button>
+        </div>
       </div>
 
       <div className={`felt-wrap${others.length >= 6 ? ' crowded' : ''}`}>
@@ -260,6 +286,13 @@ export function Table({ roomId, seat, onLeave }: { roomId: string; seat: number;
             ) : <div className="muted small">이번 핸드 미참여</div>}
           </div>
 
+          {myHand && (
+            <div className="hand-readout">
+              <span className="made">{myHand}</span>
+              {myEquity !== null && <span className="equity">승률 <b>{myEquity}%</b></span>}
+            </div>
+          )}
+
           <div className="hero-meta">
             <span className="hero-name">{me?.name ?? room.players[seat]?.name}
               {g.dealerSeat === seat && <span className="dealer-btn" style={{ marginLeft: 6 }}>D</span>}
@@ -267,12 +300,6 @@ export function Table({ roomId, seat, onLeave }: { roomId: string; seat: number;
             <span className="seat-stack amount">{fmt(me?.chips ?? room.players[seat]?.chips ?? 0)}</span>
             {me?.allIn && <span className="badge red">ALL-IN</span>}
             {me?.folded && <span className="badge">FOLD</span>}
-            {me?.inHand && (
-              <button className="btn-eye" onClick={toggleHideMyCards}
-                title={hideMyCards ? '내 손패 보기' : '내 손패 가리기'}>
-                {hideMyCards ? '🙈' : '👁'}
-              </button>
-            )}
             {myCountdown !== null && <span className={`countdown${timerFrac < 0.25 ? ' low' : ''}`}>{myCountdown}s</span>}
           </div>
 
@@ -293,12 +320,14 @@ export function Table({ roomId, seat, onLeave }: { roomId: string; seat: number;
                 <button className="btn btn-primary" disabled={busy || !canStartHand(room)}
                   onClick={() => run(() => startNewHand(roomId))}>다음 핸드</button>
               ) : <p className="muted">방장이 다음 핸드를 시작하길 기다리는 중…</p>}
-              {room.players[seat] && room.players[seat].chips <= 0 && (
+              {rebuyInfo.allowed ? (
                 <button className="btn btn-secondary" disabled={busy}
-                  onClick={() => run(() => addChips(roomId, seat, room.config.initialChips))}>
-                  리바이 (+{fmt(room.config.initialChips)})
+                  onClick={() => run(() => rebuy(roomId, seat))}>
+                  리바인 (+{fmt(room.config.initialChips)}){rebuyInfo.left !== undefined ? ` · ${rebuyInfo.left}회 남음` : ''}
                 </button>
-              )}
+              ) : (room.players[seat] && room.players[seat].chips <= 0 && rebuyInfo.reason && (
+                <span className="muted small">리바인 불가: {rebuyInfo.reason}</span>
+              ))}
             </div>
           )}
         </div>

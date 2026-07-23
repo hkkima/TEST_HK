@@ -21,7 +21,26 @@ export const DEFAULT_CONFIG: RoomConfig = {
   blindMultiplier: 2,
   maxPlayers: 6,
   actionTimerSec: 0,
+  maxRebuys: 0,
+  rebuyUntilHand: 0,
 };
+
+// Whether `seat` may currently rebuy, with a reason when not.
+export function rebuyStatus(room: Room, seat: number): { allowed: boolean; reason?: string; left?: number } {
+  const p = room.players?.[seat];
+  if (!p) return { allowed: false };
+  if (p.chips > 0) return { allowed: false, reason: '칩이 남아 있습니다' };
+  if (room.status === 'playing' && room.game && !room.game.result) {
+    return { allowed: false, reason: '핸드 종료 후 가능' };
+  }
+  const maxR = room.config.maxRebuys || 0;
+  const used = p.rebuys || 0;
+  if (maxR > 0 && used >= maxR) return { allowed: false, reason: `리바인 횟수 소진 (${maxR}회)` };
+  const until = room.config.rebuyUntilHand || 0;
+  const curHand = room.game?.handNumber || 0;
+  if (until > 0 && curHand > until) return { allowed: false, reason: `${until}핸드까지만 리바인 가능` };
+  return { allowed: true, left: maxR > 0 ? maxR - used : undefined };
+}
 
 // Stamp / clear the action deadline based on the room's timer setting.
 function applyDeadline(room: Room): void {
@@ -151,13 +170,16 @@ export async function timeoutAction(roomId: string): Promise<void> {
   });
 }
 
-export async function addChips(roomId: string, seat: number, amount: number): Promise<void> {
+// Rebuy: top the player back up to the starting stack, enforcing the room's
+// rebuy count / hand-window limits and tracking how many times they've rebought.
+export async function rebuy(roomId: string, seat: number): Promise<void> {
   await runTransaction(roomRef(roomId), (room: Room | null) => {
-    if (!room || !room.players || !room.players[seat]) return room;
-    if (room.status === 'playing' && room.game && !room.game.result) {
-      throw new Error('핸드 진행 중에는 칩을 추가할 수 없습니다.');
-    }
-    room.players[seat].chips += amount;
+    if (!room || !room.players || !room.players[seat]) return room ?? undefined;
+    const st = rebuyStatus(room, seat);
+    if (!st.allowed) throw new Error(st.reason || '지금은 리바인할 수 없습니다.');
+    const p = room.players[seat];
+    p.chips += room.config.initialChips;
+    p.rebuys = (p.rebuys || 0) + 1;
     return room;
   });
 }

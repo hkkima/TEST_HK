@@ -12,6 +12,8 @@ export interface RoomConfig {
   blindMultiplier: number;  // new BB = round(BB * multiplier)
   maxPlayers: number;       // 2..9 (chosen at room creation)
   actionTimerSec?: number;  // per-action time limit in seconds (0 / undefined = off)
+  maxRebuys?: number;       // max rebuys per player (0 / undefined = unlimited)
+  rebuyUntilHand?: number;  // rebuys allowed only up to this hand number (0 = unlimited)
 }
 
 export interface PlayerRegistry {
@@ -20,6 +22,7 @@ export interface PlayerRegistry {
   chips: number;
   connected: boolean;
   joinedAt: number;
+  rebuys?: number;   // how many times this player has rebought
 }
 
 export interface SeatState {

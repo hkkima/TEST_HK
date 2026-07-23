@@ -101,10 +101,23 @@ export function Home({ onEnter }: { onEnter: (roomId: string, seat: number) => v
                 <input className="input" type="number" min={0} max={120} step={5} value={cfg.actionTimerSec ?? 0}
                   onChange={(e) => setCfg({ ...cfg, actionTimerSec: Math.max(0, Math.min(120, Math.floor(Number(e.target.value)) || 0)) })} />
               </div>
+              <div className="field">
+                <label>리바인 횟수 (0=무제한)</label>
+                <input className="input" type="number" min={0} max={99} value={cfg.maxRebuys ?? 0}
+                  onChange={(e) => setCfg({ ...cfg, maxRebuys: Math.max(0, Math.floor(Number(e.target.value)) || 0) })} />
+              </div>
+              <div className="field">
+                <label>리바인 허용 핸드 (0=무제한)</label>
+                <input className="input" type="number" min={0} max={999} value={cfg.rebuyUntilHand ?? 0}
+                  onChange={(e) => setCfg({ ...cfg, rebuyUntilHand: Math.max(0, Math.floor(Number(e.target.value)) || 0) })} />
+              </div>
             </div>
             <p className="muted small">
-              SB는 BB의 절반, 최대 {cfg.maxPlayers}인. {cfg.handsPerLevel}핸드마다 BB가 ×{cfg.blindMultiplier} 상승.
-              {cfg.actionTimerSec ? ` 행동 제한 ${cfg.actionTimerSec}초(초과 시 자동 체크/폴드).` : ' 행동 시간 무제한.'}
+              SB는 BB의 절반, 최대 {cfg.maxPlayers}인. {cfg.handsPerLevel}핸드마다 BB ×{cfg.blindMultiplier} 상승.
+              {cfg.actionTimerSec ? ` 행동 ${cfg.actionTimerSec}초.` : ' 행동 무제한.'}
+              {' 리바인 '}
+              {cfg.maxRebuys ? `${cfg.maxRebuys}회` : '무제한'}
+              {cfg.rebuyUntilHand ? ` · ${cfg.rebuyUntilHand}핸드까지` : ''}.
             </p>
             <button className="btn btn-primary btn-block" disabled={busy} onClick={handleCreate}>방 만들기</button>
           </>
