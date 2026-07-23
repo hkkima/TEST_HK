@@ -16,6 +16,22 @@ function polar(cx: number, cy: number, rx: number, ry: number, deg: number) {
   const r = (deg * Math.PI) / 180;
   return { left: cx + rx * Math.cos(r), top: cy + ry * Math.sin(r) };
 }
+// Table positions (BTN/SB/BB/UTG…) for the seats dealt into this hand.
+function positionLabels(g: GameState): Record<number, string> {
+  const inHand = Object.keys(g.seats).map(Number).filter((s) => g.seats[s].inHand).sort((a, b) => a - b);
+  const n = inHand.length;
+  const lab: Record<number, string> = {};
+  if (n < 2) return lab;
+  const di = inHand.indexOf(g.dealerSeat);
+  const order = di >= 0 ? [...inHand.slice(di), ...inHand.slice(0, di)] : inHand;
+  if (n === 2) { lab[order[0]] = 'BTN'; lab[order[1]] = 'BB'; return lab; }
+  lab[order[0]] = 'BTN'; lab[order[1]] = 'SB'; lab[order[2]] = 'BB';
+  for (let i = 3; i < n; i++) lab[order[i]] = 'UTG' + (i - 3 ? `+${i - 3}` : '');
+  if (n >= 5) lab[order[n - 1]] = 'CO';
+  if (n >= 7) lab[order[n - 2]] = 'HJ';
+  return lab;
+}
+
 function opponentPositions(m: number): { left: number; top: number }[] {
   const cx = 50, cy = 48, rx = 44, ry = 34;
   if (m <= 0) return [];
@@ -42,11 +58,12 @@ export function Table({ roomId, seat, onLeave }: { roomId: string; seat: number;
     });
   }
 
+  const spectator = seat < 0;
   useEffect(() => {
     const unsub = subscribeRoom(roomId, setRoom);
-    markPresence(roomId, seat).catch(() => {});
+    if (!spectator) markPresence(roomId, seat).catch(() => {});
     return () => unsub();
-  }, [roomId, seat]);
+  }, [roomId, seat, spectator]);
 
   const game = room?.game || null;
   const isHost = room?.meta.hostId === myId;
@@ -164,6 +181,7 @@ export function Table({ roomId, seat, onLeave }: { roomId: string; seat: number;
   const reveal = g.result?.reveal || {};
   const winners = new Set<number>();
   g.result?.pots.forEach((p) => p.winnerSeats.forEach((w) => winners.add(w)));
+  const posLabels = positionLabels(g);
 
   const remainMs = g.deadline && !g.result ? Math.max(0, g.deadline - Date.now()) : 0;
   const timerFrac = timerSec ? Math.max(0, Math.min(1, remainMs / (timerSec * 1000))) : 0;
@@ -205,6 +223,7 @@ export function Table({ roomId, seat, onLeave }: { roomId: string; seat: number;
           <div className="seat-avatar">
             {gs.name[0]}
             {g.dealerSeat === s && <span className="dealer-btn" style={{ position: 'absolute', bottom: -3, right: -3 }}>D</span>}
+            {posLabels[s] && posLabels[s] !== 'BTN' && <span className="pos-tag">{posLabels[s]}</span>}
             {gs.folded && <span className="status-chip fold">FOLD</span>}
             {gs.allIn && <span className="status-chip allin">ALL-IN</span>}
           </div>
@@ -276,7 +295,14 @@ export function Table({ roomId, seat, onLeave }: { roomId: string; seat: number;
 
         {others.map((s, i) => <RingSeat key={s} s={s} pos={positions[i]} />)}
 
-        <div className="hero-dock">
+        {spectator && (
+          <div className="spectator-bar">
+            <span className="muted">👁 관전 중{g.toAct !== null && !g.result ? ` · ${g.seats[g.toAct]?.name}님 차례` : ''}</span>
+            <button className="btn btn-ghost" onClick={() => run(async () => { await leaveRoom(roomId, myId); onLeave(); })}>나가기</button>
+          </div>
+        )}
+
+        {!spectator && <div className="hero-dock">
           <div className="hero-cards">
             {me && me.inHand ? (
               <>
@@ -297,6 +323,7 @@ export function Table({ roomId, seat, onLeave }: { roomId: string; seat: number;
             <span className="hero-name">{me?.name ?? room.players[seat]?.name}
               {g.dealerSeat === seat && <span className="dealer-btn" style={{ marginLeft: 6 }}>D</span>}
             </span>
+            {posLabels[seat] && <span className="hero-pos">{posLabels[seat]}</span>}
             <span className="seat-stack amount">{fmt(me?.chips ?? room.players[seat]?.chips ?? 0)}</span>
             {me?.allIn && <span className="badge red">ALL-IN</span>}
             {me?.folded && <span className="badge">FOLD</span>}
@@ -330,7 +357,7 @@ export function Table({ roomId, seat, onLeave }: { roomId: string; seat: number;
               ))}
             </div>
           )}
-        </div>
+        </div>}
       </div>
 
       {flash && <><div className="allin-flash" /><div className="allin-text">ALL&nbsp;IN</div></>}

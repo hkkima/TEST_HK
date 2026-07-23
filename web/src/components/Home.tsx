@@ -44,6 +44,18 @@ export function Home({ onEnter }: { onEnter: (roomId: string, seat: number) => v
     } finally { setBusy(false); }
   }
 
+  async function handleSpectate() {
+    const code = joinCode.trim().toUpperCase();
+    if (!code) return setError('방 코드를 입력하세요.');
+    setBusy(true); setError('');
+    try {
+      if (!(await roomExists(code))) throw new Error('방을 찾을 수 없습니다.');
+      onEnter(code, -1); // seat -1 = spectator
+    } catch (e: any) {
+      setError(e.message || String(e));
+    } finally { setBusy(false); }
+  }
+
   return (
     <div className="screen">
       <div className="panel">
@@ -128,7 +140,9 @@ export function Home({ onEnter }: { onEnter: (roomId: string, seat: number) => v
               <input className="input" value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                 maxLength={5} placeholder="예: ABCDE" style={{ textTransform: 'uppercase' }} />
             </div>
-            <button className="btn btn-primary btn-block" disabled={busy} onClick={handleJoin}>참가</button>
+            <button className="btn btn-primary btn-block" disabled={busy} onClick={handleJoin}>플레이어로 참가</button>
+            <button className="btn btn-secondary btn-block" disabled={busy} onClick={handleSpectate}>관전으로 입장</button>
+            <p className="muted small">관전은 좌석을 차지하지 않고 테이블만 지켜봅니다. (상대 손패는 안 보임)</p>
           </>
         )}
 

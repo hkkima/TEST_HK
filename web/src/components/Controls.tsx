@@ -16,9 +16,19 @@ export function Controls({ game, seat, onAction, busy }: {
   const minRaiseTo = isBet ? game.bb : game.currentBet + game.minRaise;
   const maxTo = s.committedThisStreet + s.chips;   // all-in total
   const clampedMin = Math.min(minRaiseTo, maxTo);
+  const clamp = (n: number) => Math.max(clampedMin, Math.min(maxTo, n));
 
+  // `amount` is the committed value; `text` is the raw input string so the user
+  // can freely type (we only clamp on blur / submit, never per-keystroke — that
+  // was the bug where the min value overwrote whatever you tried to type).
   const [amount, setAmount] = useState(clampedMin);
-  useEffect(() => { setAmount(clampedMin); }, [game.currentBet, game.minRaise, game.street, seat]);
+  const [text, setText] = useState(String(clampedMin));
+  useEffect(() => {
+    setAmount(clampedMin);
+    setText(String(clampedMin));
+  }, [game.currentBet, game.minRaise, game.street, seat]);
+
+  const setBoth = (n: number) => { setAmount(n); setText(String(n)); };
 
   const canRaise = s.chips > toCall;   // can put more in than a call
   const canCheck = toCall <= 0;
@@ -37,8 +47,8 @@ export function Controls({ game, seat, onAction, busy }: {
         )}
         {canRaise && (
           <button className="act act-raise" disabled={busy}
-            onClick={() => onAction(isBet ? 'bet' : 'raise', amount)}>
-            {isBet ? '벳' : '레이즈'} {fmt(amount)}{amount >= maxTo ? ' (올인)' : ''}
+            onClick={() => onAction(isBet ? 'bet' : 'raise', clamp(amount))}>
+            {isBet ? '벳' : '레이즈'} {fmt(clamp(amount))}{clamp(amount) >= maxTo ? ' (올인)' : ''}
           </button>
         )}
         <button className="act act-check" disabled={busy} onClick={() => onAction('allin')}>
@@ -49,13 +59,19 @@ export function Controls({ game, seat, onAction, busy }: {
       {canRaise && (
         <div className="raise-row">
           <input type="range" className="bet-slider" min={clampedMin} max={maxTo} step={1}
-            value={amount} onChange={(e) => setAmount(Number(e.target.value))} aria-label="베팅 금액" />
-          <input type="number" className="num" min={clampedMin} max={maxTo}
-            value={amount} onChange={(e) => setAmount(Math.max(clampedMin, Math.min(maxTo, Number(e.target.value))))} />
+            value={clamp(amount)} onChange={(e) => setBoth(Number(e.target.value))} aria-label="베팅 금액" />
+          <input type="number" className="num" inputMode="numeric" min={clampedMin} max={maxTo}
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              const n = Number(e.target.value);
+              if (e.target.value !== '' && !Number.isNaN(n)) setAmount(n); // store raw; clamp later
+            }}
+            onBlur={() => setBoth(clamp(Number(text) || clampedMin))} />
           <div className="quick">
             {[0.5, 0.75, 1].map((f) => {
               const target = Math.min(maxTo, Math.max(clampedMin, Math.round((game.pot + toCall) * f) + game.currentBet));
-              return <button key={f} className="btn btn-ghost" onClick={() => setAmount(target)}>
+              return <button key={f} className="btn btn-ghost" onClick={() => setBoth(target)}>
                 {f === 1 ? '팟' : `${f * 100}%`}
               </button>;
             })}

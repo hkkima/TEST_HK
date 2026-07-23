@@ -26,7 +26,7 @@ export function CardView({ card, hidden, size, dealt, delay }: {
           {card && (
             <>
               <span className="pcard-corner">{rank}<span className="s">{suit}</span></span>
-              <span className="pcard-pip">{suit}</span>
+              <span className="pcard-center"><span className="pcard-rank">{rank}</span><span className="pcard-suit">{suit}</span></span>
             </>
           )}
         </div>
